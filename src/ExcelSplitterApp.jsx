@@ -47,9 +47,10 @@ export default function ExcelSplitterApp() {
         return acc;
       }, {});
 
-      const newWorkbook = XLSX.utils.book_new();
-      newWorkbook.SheetNames = [];
-      newWorkbook.Sheets = {};
+      const newWorkbook = {
+        SheetNames: [],
+        Sheets: {}
+      };
 
       Object.entries(groups).forEach(([key, rows]) => {
         const filtered = rows.map((r) => {
@@ -60,13 +61,28 @@ export default function ExcelSplitterApp() {
           return filteredRow;
         });
         const ws = XLSX.utils.json_to_sheet(filtered);
-        XLSX.utils.book_append_sheet(newWorkbook, ws, key.substring(0, 31));
+        const sheetName = key.substring(0, 31);
+        newWorkbook.SheetNames.push(sheetName);
+        newWorkbook.Sheets[sheetName] = ws;
       });
 
       XLSX.writeFile(newWorkbook, "分頁結果.xlsx");
       setStatus("處理完成，檔案已下載！");
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const handleSplitColumnChange = (value) => {
+    setSplitColumn(value);
+    // 自動勾選該欄位為輸出欄位之一，且鎖定
+    setSelectedCols((prev) =>
+      prev.includes(value) ? prev : [...prev, value]
+    );
+  };
+
+  const handleSelectAll = () => {
+    const allExceptSplit = columns.filter((col) => col !== splitColumn);
+    setSelectedCols([splitColumn, ...allExceptSplit]);
   };
 
   return (
@@ -90,7 +106,7 @@ export default function ExcelSplitterApp() {
               <select
                 className="border p-2 w-full rounded"
                 value={splitColumn}
-                onChange={(e) => setSplitColumn(e.target.value)}
+                onChange={(e) => handleSplitColumnChange(e.target.value)}
               >
                 <option value="">--請選擇--</option>
                 {columns.map((col) => (
@@ -103,6 +119,12 @@ export default function ExcelSplitterApp() {
 
             <div>
               <label className="block text-sm font-medium mb-1">輸出欄位</label>
+              <button
+                onClick={handleSelectAll}
+                className="mb-2 text-blue-600 hover:underline text-sm"
+              >
+                全選
+              </button>
               <div className="grid grid-cols-2 gap-2">
                 {columns.map((col) => (
                   <label key={col} className="flex items-center text-sm">
@@ -111,6 +133,7 @@ export default function ExcelSplitterApp() {
                       className="mr-2"
                       value={col}
                       checked={selectedCols.includes(col)}
+                      disabled={col === splitColumn} // 鎖定分頁欄位
                       onChange={(e) => {
                         const checked = e.target.checked;
                         setSelectedCols((prev) =>
@@ -120,7 +143,7 @@ export default function ExcelSplitterApp() {
                         );
                       }}
                     />
-                    {col}
+                    {col} {col === splitColumn && "(分頁欄位)"}
                   </label>
                 ))}
               </div>
