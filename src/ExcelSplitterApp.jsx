@@ -48,6 +48,9 @@ export default function ExcelSplitterApp() {
       }, {});
 
       const newWorkbook = XLSX.utils.book_new();
+      newWorkbook.SheetNames = [];
+      newWorkbook.Sheets = {};
+
       Object.entries(groups).forEach(([key, rows]) => {
         const filtered = rows.map((r) => {
           const filteredRow = {};
