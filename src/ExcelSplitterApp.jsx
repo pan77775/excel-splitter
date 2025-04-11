@@ -32,41 +32,58 @@ export default function ExcelSplitterApp() {
       setStatus("請選擇檔案、分頁欄位及至少一個輸出欄位");
       return;
     }
-
+  
     const reader = new FileReader();
     reader.onload = (evt) => {
       const data = new Uint8Array(evt.target.result);
       const workbook = XLSX.read(data, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(sheet);
-
+  
       const groups = json.reduce((acc, row) => {
+        // 檢查 splitColumn 的值是否存在且不為空
         const key = row[splitColumn];
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(row);
+        if (key === undefined || key === null || key === "") {
+          // 跳過空值或將它們分配到特定分頁名稱
+          if (!acc["未分類"]) acc["未分類"] = [];
+          acc["未分類"].push(row);
+        } else {
+          // 對於非空值，正常處理
+          const keyStr = String(key); // 確保 key 是字串
+          if (!acc[keyStr]) acc[keyStr] = [];
+          acc[keyStr].push(row);
+        }
         return acc;
       }, {});
-
+  
       const wb = XLSX.utils.book_new();
-
+  
       Object.entries(groups).forEach(([key, rows]) => {
-        const filtered = rows.map((r) => {
-          const filteredRow = {};
-          selectedCols.forEach((col) => {
-            filteredRow[col] = r[col];
+        if (rows.length > 0) { // 只為有資料的群組創建工作表
+          const filtered = rows.map((r) => {
+            const filteredRow = {};
+            selectedCols.forEach((col) => {
+              filteredRow[col] = r[col];
+            });
+            return filteredRow;
           });
-          return filteredRow;
-        });
-        const ws = XLSX.utils.json_to_sheet(filtered);
-        const sheetName = key.substring(0, 31);
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+          const ws = XLSX.utils.json_to_sheet(filtered);
+          
+          // 確保工作表名稱有效且不超過 Excel 限制的 31 個字元
+          let sheetName = key;
+          if (sheetName === "") sheetName = "未命名";
+          sheetName = sheetName.substring(0, 31).replace(/[\[\]\*\?\/\\]/g, "_");
+          
+          XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        }
       });
-
+  
       XLSX.writeFile(wb, "分頁結果.xlsx");
-      setStatus("處理完成，檔案已下載！");
+      setStatus("處理完成，請下載檔案！");
     };
     reader.readAsArrayBuffer(file);
   };
+  
 
   const handleSplitColumnChange = (value) => {
     setSplitColumn(value);
