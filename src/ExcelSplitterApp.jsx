@@ -47,10 +47,7 @@ export default function ExcelSplitterApp() {
         return acc;
       }, {});
 
-      const newWorkbook = {
-        SheetNames: [],
-        Sheets: {}
-      };
+      const wb = XLSX.utils.book_new();
 
       Object.entries(groups).forEach(([key, rows]) => {
         const filtered = rows.map((r) => {
@@ -62,11 +59,10 @@ export default function ExcelSplitterApp() {
         });
         const ws = XLSX.utils.json_to_sheet(filtered);
         const sheetName = key.substring(0, 31);
-        newWorkbook.SheetNames.push(sheetName);
-        newWorkbook.Sheets[sheetName] = ws;
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
       });
 
-      XLSX.writeFile(newWorkbook, "分頁結果.xlsx");
+      XLSX.writeFile(wb, "分頁結果.xlsx");
       setStatus("處理完成，檔案已下載！");
     };
     reader.readAsArrayBuffer(file);
@@ -74,10 +70,7 @@ export default function ExcelSplitterApp() {
 
   const handleSplitColumnChange = (value) => {
     setSplitColumn(value);
-    // 自動勾選該欄位為輸出欄位之一，且鎖定
-    setSelectedCols((prev) =>
-      prev.includes(value) ? prev : [...prev, value]
-    );
+    setSelectedCols((prev) => (prev.includes(value) ? prev : [...prev, value]));
   };
 
   const handleSelectAll = () => {
@@ -86,79 +79,79 @@ export default function ExcelSplitterApp() {
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-6 text-gray-800">
-      <header className="text-center">
-        <h1 className="text-2xl font-bold">Excel 分頁小幫手</h1>
-        <p className="text-sm text-gray-500">快速將 Excel 按欄位自動分頁</p>
-      </header>
-      <div className="shadow-md border rounded p-4 space-y-4">
-        <input
-          type="file"
-          accept=".xlsx, .xls"
-          onChange={handleFileUpload}
-          className="w-full border p-2 rounded"
-        />
+    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-8 space-y-8">
+        <header className="text-center">
+          <h1 className="text-3xl font-bold text-gray-800">Excel 分頁小幫手</h1>
+          <p className="text-sm text-gray-500 mt-1">快速將 Excel 按欄位自動分頁並匯出</p>
+        </header>
 
-        {columns.length > 0 && (
-          <>
-            <div>
-              <label className="block text-sm font-medium mb-1">分頁依據欄位</label>
-              <select
-                className="border p-2 w-full rounded"
-                value={splitColumn}
-                onChange={(e) => handleSplitColumnChange(e.target.value)}
-              >
-                <option value="">--請選擇--</option>
-                {columns.map((col) => (
-                  <option key={col} value={col}>
-                    {col}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">上傳 Excel 檔案</label>
+            <input
+              type="file"
+              accept=".xlsx, .xls"
+              onChange={handleFileUpload}
+              className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">輸出欄位</label>
-              <button
-                onClick={handleSelectAll}
-                className="mb-2 text-blue-600 hover:underline text-sm"
-              >
-                全選
-              </button>
-              <div className="grid grid-cols-2 gap-2">
-                {columns.map((col) => (
-                  <label key={col} className="flex items-center text-sm">
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      value={col}
-                      checked={selectedCols.includes(col)}
-                      disabled={col === splitColumn} // 鎖定分頁欄位
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setSelectedCols((prev) =>
-                          checked
-                            ? [...prev, col]
-                            : prev.filter((c) => c !== col)
-                        );
-                      }}
-                    />
-                    {col} {col === splitColumn && "(分頁欄位)"}
-                  </label>
-                ))}
+          {columns.length > 0 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">分頁依據欄位</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                  value={splitColumn}
+                  onChange={(e) => handleSplitColumnChange(e.target.value)}
+                >
+                  <option value="">--請選擇--</option>
+                  {columns.map((col) => (
+                    <option key={col} value={col}>{col}</option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            <button
-              onClick={handleSplit}
-              className="mt-2 w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-            >
-              分頁並下載
-            </button>
-          </>
-        )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">輸出欄位</label>
+                <button
+                  onClick={handleSelectAll}
+                  className="text-blue-600 hover:underline text-sm mb-2"
+                >全選</button>
+                <div className="grid grid-cols-2 gap-2">
+                  {columns.map((col) => (
+                    <label key={col} className="flex items-center text-sm text-gray-700">
+                      <input
+                        type="checkbox"
+                        className="mr-2 rounded"
+                        value={col}
+                        checked={selectedCols.includes(col)}
+                        disabled={col === splitColumn}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setSelectedCols((prev) =>
+                            checked ? [...prev, col] : prev.filter((c) => c !== col)
+                          );
+                        }}
+                      />
+                      {col} {col === splitColumn && <span className="text-xs text-gray-400">(分頁欄位)</span>}
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-        {status && <p className="text-sm text-green-600 font-medium">{status}</p>}
+              <button
+                onClick={handleSplit}
+                className="w-full mt-4 bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                分頁並下載
+              </button>
+            </>
+          )}
+
+          {status && <p className="text-green-600 text-sm font-medium text-center">{status}</p>}
+        </div>
       </div>
     </div>
   );
