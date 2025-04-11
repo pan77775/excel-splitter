@@ -136,12 +136,16 @@ export default function ExcelSplitterApp() {
                   onClick={handleSelectAll}
                   className="text-blue-600 hover:underline text-sm mb-2"
                 >全選</button>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                   {columns.map((col) => (
-                    <label key={col} className="flex items-center text-sm text-gray-700">
+                    <label 
+                      key={col} 
+                      className="flex items-center text-sm text-gray-700 border border-gray-200 rounded p-2 truncate"
+                      title={col}
+                    >
                       <input
                         type="checkbox"
-                        className="mr-2 rounded"
+                        className="mr-2 rounded flex-shrink-0"
                         value={col}
                         checked={selectedCols.includes(col)}
                         disabled={col === splitColumn}
@@ -152,7 +156,9 @@ export default function ExcelSplitterApp() {
                           );
                         }}
                       />
-                      {col} {col === splitColumn && <span className="text-xs text-gray-400">(分頁欄位)</span>}
+                      <span className="truncate">
+                        {col} {col === splitColumn && <span className="text-xs text-gray-400">(分頁欄位)</span>}
+                      </span>
                     </label>
                   ))}
                 </div>
