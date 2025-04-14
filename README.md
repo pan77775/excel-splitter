@@ -1,12 +1,72 @@
-# React + Vite
+# 📊 Excel 分頁小幫手
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一個簡單好用的 React 靜態網頁工具，讓你可以依據特定欄位，將一個大型 Excel 檔案分成多個工作表，並匯出成新的 Excel 檔案✨  
+適合有大量數據要分類整理的使用者！
 
-Currently, two official plugins are available:
+## 🧩 功能說明
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✅ 上傳 Excel 檔案（`.xlsx`, `.xls`）
+- ✅ 自動偵測欄位，讓你選擇想依據的「分頁欄位」
+- ✅ 將原始資料依分頁欄位分類，每組資料生成一個工作表
+- ✅ 自動處理空值與非法工作表名稱
+- ✅ 匯出一份包含多個工作表的新 Excel 檔案
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 使用方式
+
+1. 開啟網頁後，點選 **上傳 Excel 檔案**
+2. 系統會自動讀取檔案，顯示可用欄位
+3. 選擇一個「分頁依據欄位」作為分組依據
+4. 選擇要輸出的欄位（可按「全選」快速勾選）
+5. 點擊 **「分頁並下載」**，完成後即可下載新的 Excel 檔案
+
+> 📝 若某些資料在分頁欄位中為空值，會自動歸類到「未分類」工作表
+
+---
+
+## 🛠 技術說明
+
+- 使用框架：`React`
+- 樣式套件：`Tailwind CSS`
+- Excel 操作：`xlsx` 套件（[SheetJS](https://github.com/SheetJS/sheetjs)）
+
+---
+
+## 📂 專案架構
+
+主要程式碼在 `ExcelSplitterApp` 函式元件中，包含以下功能區塊：
+
+- `handleFileUpload`：讀取並解析 Excel，取得欄位名稱
+- `handleSplit`：依欄位分組並建立多工作表，透過 `xlsx` 匯出
+- `handleSplitColumnChange`、`handleSelectAll`：欄位選取邏輯處理
+- 表單與選單：使用 Tailwind 打造簡潔 UI，讓操作更直覺
+
+---
+
+## 📎 注意事項
+
+- 僅支援 Excel 檔案（`.xlsx`、`.xls`）
+- 匯出的工作表名稱會自動過濾特殊字元（如 `* ? / \` 等）
+- 工作表名稱超過 31 字元將被截斷
+- 建議資料量不要過大，以免瀏覽器卡住
+
+---
+
+## 💡 適合誰使用？
+
+- 需要依據欄位內容分拆大量 Excel 資料的人員
+
+---
+
+## 📜 License
+
+MIT 授權自由使用
+
+---
+
+## ✨ 作者
+
+開發者：pan77775
+歡迎一起改進這個小工具喔！
+
